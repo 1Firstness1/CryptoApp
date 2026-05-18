@@ -50,7 +50,7 @@ bool OpenSslProvider::encrypt(const std::string& inputPath,
     }
 
     std::ifstream in(inputPath, std::ios::binary);
-    std::ofstream out(outputPath, std::ios::binary);
+    std::ofstream out(outputPath, std::ios::binary | std::ios::trunc);
 
     if (!in || !out) {
         std::cerr << "OpenSslProvider: cannot open files\n";
@@ -74,9 +74,13 @@ bool OpenSslProvider::encrypt(const std::string& inputPath,
         }
 
         out.write(reinterpret_cast<char*>(outBuf.data()), outLen);
+        if (!out) {
+            std::cerr << "OpenSslProvider: write failed\n";
+            return false;
+        }
         totalProcessed += bytesRead;
 
-        if (totalProcessed % (CHUNK_SIZE * 10) == 0) {
+        if (totalProcessed % (CHUNK_SIZE * 10) == 0 && totalProcessed > 0) {
             std::cout << "\rEncrypting... " << totalProcessed / 1024 << " KB" << std::flush;
         }
     }
@@ -87,8 +91,11 @@ bool OpenSslProvider::encrypt(const std::string& inputPath,
         return false;
     }
 
-    out.write(reinterpret_cast<char*>(outBuf.data()), finalLen);
-    std::cout << "\rEncrypting... Done (" << totalProcessed / 1024 << " KB)\n";
+    if (finalLen > 0) {
+        out.write(reinterpret_cast<char*>(outBuf.data()), finalLen);
+    }
+
+    std::cout << "\rEncrypting... Done (" << totalProcessed / 1024 << " KB)    \n";
 
     return true;
 }

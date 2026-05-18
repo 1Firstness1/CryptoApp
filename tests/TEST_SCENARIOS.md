@@ -1,6 +1,6 @@
 # Тестовые сценарии для CryptoApp
 
-## Unit-тесты (по 5-7 на каждый класс)
+## Unit-тесты
 
 ### 1. Options (7 тестов)
 - autoOutputName в режиме encrypt добавляет .enc

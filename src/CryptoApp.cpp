@@ -66,18 +66,10 @@ bool CryptoApp::processEncrypt(const Options& opt, const std::string& password) 
         return false;
     }
 
-    std::ofstream out(outPath, std::ios::binary);
-    if (!out) {
-        std::cerr << "Error: cannot create output file\n";
-        return false;
-    }
+    // Create temporary file for encrypted data
+    std::string tempPath = outPath + ".tmp";
 
-    if (!header.write(out)) {
-        std::cerr << "Error: failed to write header\n";
-        return false;
-    }
-    out.close();
-
+    // Encrypt using selected provider to temp file
     auto provider = createProvider(opt.backend);
     if (!provider) {
         std::cerr << "Error: failed to create provider\n";
@@ -85,14 +77,57 @@ bool CryptoApp::processEncrypt(const Options& opt, const std::string& password) 
     }
 
     std::cout << "Starting encryption using " << opt.backend << " backend...\n";
-    bool result = provider->encrypt(opt.input, outPath, key, header.getIV());
+    bool result = provider->encrypt(opt.input, tempPath, key, header.getIV());
 
+    if (!result) {
+        std::cerr << "Error: encryption failed\n";
+        std::fill(key.begin(), key.end(), 0);
+        fs::remove(tempPath);
+        return false;
+    }
+
+    // Now combine header and encrypted data into final file
+    std::ofstream out(outPath, std::ios::binary);
+    if (!out) {
+        std::cerr << "Error: cannot create output file\n";
+        fs::remove(tempPath);
+        return false;
+    }
+
+    // Write header
+    if (!header.write(out)) {
+        std::cerr << "Error: failed to write header\n";
+        out.close();
+        fs::remove(tempPath);
+        fs::remove(outPath);
+        return false;
+    }
+
+    // Append encrypted data
+    std::ifstream in(tempPath, std::ios::binary);
+    if (!in) {
+        std::cerr << "Error: cannot read encrypted data\n";
+        out.close();
+        fs::remove(tempPath);
+        fs::remove(outPath);
+        return false;
+    }
+
+    out << in.rdbuf();
+    in.close();
+    out.close();
+
+    // Clean up temp file
+    fs::remove(tempPath);
+
+    // Securely clear key from memory
     std::fill(key.begin(), key.end(), 0);
 
-    return result;
+    return true;
 }
 
 bool CryptoApp::processDecrypt(const Options& opt, const std::string& password) {
+    // Read header from encrypted file
     std::ifstream in(opt.input, std::ios::binary);
     if (!in) {
         std::cerr << "Error: cannot open input file\n";
@@ -104,13 +139,13 @@ bool CryptoApp::processDecrypt(const Options& opt, const std::string& password) 
         std::cerr << "Error: invalid encrypted file format\n";
         return false;
     }
-    in.close();
 
     if (!header.validate()) {
         std::cerr << "Error: header validation failed\n";
         return false;
     }
 
+    // Check backend mismatch
     CryptoHeader::Backend requestedBackend = (opt.backend == "openssl")
         ? CryptoHeader::Backend::OPENSSL
         : CryptoHeader::Backend::SIMPLE;
@@ -129,21 +164,44 @@ bool CryptoApp::processDecrypt(const Options& opt, const std::string& password) 
         return false;
     }
 
+    // Generate output path
     std::string outPath = autoOutputName(opt);
     if (m_io.fileExists(outPath) && !opt.force) {
         std::cerr << "Error: output file already exists: " << outPath << "\n";
         return false;
     }
 
+    // Extract encrypted data (skip header)
+    // Get current position after header
+    std::streampos dataStart = in.tellg();
+
+    // Write encrypted data to temp file
+    std::string tempPath = outPath + ".tmp";
+    std::ofstream tempOut(tempPath, std::ios::binary);
+    if (!tempOut) {
+        std::cerr << "Error: cannot create temp file\n";
+        return false;
+    }
+
+    tempOut << in.rdbuf();
+    tempOut.close();
+    in.close();
+
+    // Decrypt using selected provider
     auto provider = createProvider(opt.backend);
     if (!provider) {
         std::cerr << "Error: failed to create provider\n";
+        fs::remove(tempPath);
         return false;
     }
 
     std::cout << "Starting decryption using " << opt.backend << " backend...\n";
-    bool result = provider->decrypt(opt.input, outPath, key, header.getIV());
+    bool result = provider->decrypt(tempPath, outPath, key, header.getIV());
 
+    // Clean up temp file
+    fs::remove(tempPath);
+
+    // Securely clear key from memory
     std::fill(key.begin(), key.end(), 0);
 
     if (result) {
