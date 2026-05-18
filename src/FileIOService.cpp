@@ -30,7 +30,6 @@ void FileIOService::close() {
 }
 
 bool FileIOService::readChunk(std::vector<uint8_t>& buffer, size_t& bytesRead) {
-    // Actual reading is done in provider classes
     bytesRead = 0;
     return true;
 }

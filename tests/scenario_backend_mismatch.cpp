@@ -8,8 +8,7 @@ namespace fs = std::filesystem;
 
 int main() {
     std::cout << "=== Scenario: Backend Mismatch ===\n";
-    
-    // Create and encrypt with OpenSSL
+
     std::ofstream("test.txt") << "Secret data";
     
     Options encryptOpt;
@@ -29,11 +28,10 @@ int main() {
         return 1;
     }
     std::cout << "✓ Encryption with OpenSSL successful\n";
-    
-    // Try to decrypt with Simple backend
+
     Options decryptOpt;
     decryptOpt.mode = "decrypt";
-    decryptOpt.backend = "simple";  // Wrong backend!
+    decryptOpt.backend = "simple";
     decryptOpt.input = "test.enc";
     decryptOpt.output = "test_decrypted.txt";
     decryptOpt.force = true;
@@ -46,8 +44,7 @@ int main() {
         std::cout << "✗ Decryption should have failed but succeeded\n";
         return 1;
     }
-    
-    // Cleanup
+
     fs::remove("test.txt");
     fs::remove("test.enc");
     

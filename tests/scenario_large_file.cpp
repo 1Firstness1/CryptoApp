@@ -11,8 +11,7 @@ namespace fs = std::filesystem;
 int main() {
     std::cout << "=== Scenario: Large File Processing ===\n";
 
-    // Create a 5MB test file (smaller for faster testing)
-    const size_t fileSize = 5 * 1024 * 1024; // 5 MB
+    const size_t fileSize = 5 * 1024 * 1024;
     std::ofstream largeFile("large_test.txt", std::ios::binary);
 
     std::vector<char> data(1024, 'X');
@@ -22,8 +21,7 @@ int main() {
     largeFile.close();
 
     std::cout << "✓ Created " << fileSize / (1024*1024) << "MB test file\n";
-    
-    // Encrypt
+
     Options encryptOpt;
     encryptOpt.mode = "encrypt";
     encryptOpt.backend = "openssl";
@@ -67,16 +65,14 @@ int main() {
         std::cout << "✗ Decryption failed\n";
         return 1;
     }
-    
-    // Verify file sizes
+
     if (fs::file_size("large_test.txt") == fs::file_size("large_test_decrypted.txt")) {
         std::cout << "✓ File size verification passed\n";
     } else {
         std::cout << "✗ File size mismatch\n";
         return 1;
     }
-    
-    // Cleanup
+
     fs::remove("large_test.txt");
     fs::remove("large_test.enc");
     fs::remove("large_test_decrypted.txt");

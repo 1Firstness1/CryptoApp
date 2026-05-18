@@ -66,7 +66,6 @@ bool CryptoApp::processEncrypt(const Options& opt, const std::string& password) 
         return false;
     }
 
-    // Create output file and write header
     std::ofstream out(outPath, std::ios::binary);
     if (!out) {
         std::cerr << "Error: cannot create output file\n";
@@ -79,7 +78,6 @@ bool CryptoApp::processEncrypt(const Options& opt, const std::string& password) 
     }
     out.close();
 
-    // Encrypt using selected provider
     auto provider = createProvider(opt.backend);
     if (!provider) {
         std::cerr << "Error: failed to create provider\n";
@@ -89,14 +87,12 @@ bool CryptoApp::processEncrypt(const Options& opt, const std::string& password) 
     std::cout << "Starting encryption using " << opt.backend << " backend...\n";
     bool result = provider->encrypt(opt.input, outPath, key, header.getIV());
 
-    // Securely clear key from memory
     std::fill(key.begin(), key.end(), 0);
 
     return result;
 }
 
 bool CryptoApp::processDecrypt(const Options& opt, const std::string& password) {
-    // Read header from encrypted file
     std::ifstream in(opt.input, std::ios::binary);
     if (!in) {
         std::cerr << "Error: cannot open input file\n";
@@ -115,7 +111,6 @@ bool CryptoApp::processDecrypt(const Options& opt, const std::string& password) 
         return false;
     }
 
-    // Check backend mismatch
     CryptoHeader::Backend requestedBackend = (opt.backend == "openssl")
         ? CryptoHeader::Backend::OPENSSL
         : CryptoHeader::Backend::SIMPLE;
@@ -134,14 +129,12 @@ bool CryptoApp::processDecrypt(const Options& opt, const std::string& password) 
         return false;
     }
 
-    // Generate output path
     std::string outPath = autoOutputName(opt);
     if (m_io.fileExists(outPath) && !opt.force) {
         std::cerr << "Error: output file already exists: " << outPath << "\n";
         return false;
     }
 
-    // Decrypt using selected provider
     auto provider = createProvider(opt.backend);
     if (!provider) {
         std::cerr << "Error: failed to create provider\n";
@@ -151,7 +144,6 @@ bool CryptoApp::processDecrypt(const Options& opt, const std::string& password) 
     std::cout << "Starting decryption using " << opt.backend << " backend...\n";
     bool result = provider->decrypt(opt.input, outPath, key, header.getIV());
 
-    // Securely clear key from memory
     std::fill(key.begin(), key.end(), 0);
 
     if (result) {

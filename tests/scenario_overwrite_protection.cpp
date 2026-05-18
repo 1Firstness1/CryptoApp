@@ -8,11 +8,9 @@ namespace fs = std::filesystem;
 
 int main() {
     std::cout << "=== Scenario: Overwrite Protection ===\n";
-    
-    // Create original file
+
     std::ofstream("test.txt") << "Original content";
-    
-    // Encrypt first time
+
     Options opt1;
     opt1.mode = "encrypt";
     opt1.backend = "openssl";
@@ -30,8 +28,7 @@ int main() {
         return 1;
     }
     std::cout << "✓ First encryption successful\n";
-    
-    // Try to encrypt again without force
+
     Options opt2;
     opt2.mode = "encrypt";
     opt2.backend = "openssl";
@@ -47,8 +44,7 @@ int main() {
         std::cout << "✗ Should have prevented overwrite but didn't\n";
         return 1;
     }
-    
-    // Encrypt with force flag
+
     Options opt3;
     opt3.mode = "encrypt";
     opt3.backend = "openssl";
@@ -64,8 +60,7 @@ int main() {
         std::cout << "✗ Should have overwritten but failed\n";
         return 1;
     }
-    
-    // Cleanup
+
     fs::remove("test.txt");
     fs::remove("output.enc");
     

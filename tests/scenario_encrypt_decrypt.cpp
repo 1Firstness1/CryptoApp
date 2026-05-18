@@ -9,12 +9,10 @@ namespace fs = std::filesystem;
 
 int main() {
     std::cout << "=== Scenario: Encrypt and Decrypt File ===\n";
-    
-    // Create test file
+
     const std::string testContent = "Hello, World! This is a test file for encryption.";
     std::ofstream("test_original.txt") << testContent;
-    
-    // Encrypt
+
     Options encryptOpt;
     encryptOpt.mode = "encrypt";
     encryptOpt.backend = "openssl";
@@ -33,8 +31,7 @@ int main() {
         std::cout << "✗ Encryption failed\n";
         return 1;
     }
-    
-    // Decrypt
+
     Options decryptOpt;
     decryptOpt.mode = "decrypt";
     decryptOpt.backend = "openssl";
@@ -50,8 +47,7 @@ int main() {
         std::cout << "✗ Decryption failed\n";
         return 1;
     }
-    
-    // Verify content
+
     std::ifstream decrypted("test_decrypted.txt");
     std::string content((std::istreambuf_iterator<char>(decrypted)),
                          std::istreambuf_iterator<char>());
@@ -62,8 +58,7 @@ int main() {
         std::cout << "✗ Content verification failed\n";
         return 1;
     }
-    
-    // Cleanup
+
     fs::remove("test_original.txt");
     fs::remove("test_encrypted.enc");
     fs::remove("test_decrypted.txt");

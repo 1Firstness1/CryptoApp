@@ -30,7 +30,6 @@ int main() {
     }
     std::cout << "✓ Encryption successful\n";
 
-    // Try to decrypt with wrong password
     Options decryptOpt;
     decryptOpt.mode = "decrypt";
     decryptOpt.backend = "openssl";
@@ -48,7 +47,6 @@ int main() {
         return 1;
     }
 
-    // Cleanup
     fs::remove("test.txt");
     fs::remove("test.enc");
     fs::remove("test_decrypted.txt");

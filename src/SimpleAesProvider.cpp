@@ -15,7 +15,6 @@ void SimpleAesProvider::processBlock(uint8_t* data, size_t size,
                                       const std::array<uint8_t, KEY_SIZE>& key,
                                       const std::array<uint8_t, IV_SIZE>& iv,
                                       bool encrypt) {
-    // Простая XOR-реализация для демонстрации
     for (size_t i = 0; i < size; ++i) {
         data[i] ^= key[i % KEY_SIZE];
         data[i] ^= iv[i % IV_SIZE];

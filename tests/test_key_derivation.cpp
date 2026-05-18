@@ -7,7 +7,6 @@ protected:
     void SetUp() override {
         service = std::make_unique<KeyDerivationService>();
 
-        // Initialize test salt
         for (size_t i = 0; i < SALT_SIZE; ++i) {
             testSalt[i] = static_cast<uint8_t>(i);
         }
