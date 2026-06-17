@@ -21,6 +21,32 @@
 
 ---
 
+## Docker
+
+### Сборка образа (тесты запускаются в процессе сборки)
+```bash
+docker build -t cryptoapp .
+```
+
+### Отдельный образ для запуска тестов
+```bash
+docker build --target tester -t cryptoapp-test .
+docker run --rm cryptoapp-test
+```
+
+### Запуск (CLI-аргументы)
+```bash
+docker run --rm cryptoapp --help
+docker run --rm -v "$PWD:/data" cryptoapp --mode encrypt --backend openssl --in /data/input.txt --out /data/input.txt.enc
+```
+
+### Запуск интерактивного меню
+```bash
+docker run -it --rm -v "$PWD:/data" cryptoapp
+```
+
+---
+
 ## Запуск
 
 ### 1) Интерактивный режим (меню)
@@ -45,7 +71,7 @@
 Если переданы аргументы, используется CLI:
 
 ```bash
-./build/filecrypt --mode <encrypt|decrypt> --backend <openssl|simple|o|s> --in <input> [--out <output>] [--force]
+./crypto_app --mode <encrypt|decrypt> --backend <openssl|simple|o|s> --in <input> [--out <output>] [--force]
 ```
 
 Параметры:
@@ -60,17 +86,17 @@
 
 Шифрование:
 ```bash
-./build/filecrypt --mode encrypt --backend o --in "/Users/artem/test file.txt" --out "/Users/artem/test file.txt.enc"
+./crypto_app --mode encrypt --backend o --in "/Users/artem/test file.txt" --out "/Users/artem/test file.txt.enc"
 ```
 
 Дешифрование:
 ```bash
-./build/filecrypt --mode decrypt --backend openssl --in "/Users/artem/test file.txt.enc" --out "/Users/artem/test file_restored.txt"
+./crypto_app --mode decrypt --backend openssl --in "/Users/artem/test file.txt.enc" --out "/Users/artem/test file_restored.txt"
 ```
 
 Авто-имя выходного файла:
 ```bash
-./build/filecrypt --mode encrypt --backend s --in "./notes.txt"
+./crypto_app --mode encrypt --backend s --in "./notes.txt"
 ```
 В этом случае выходной файл будет `notes.txt.enc`.
 
